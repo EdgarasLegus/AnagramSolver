@@ -25,7 +25,7 @@ namespace AnagramSolver.BusinessLogic
 
     public class AnagramRepository
     {
-        const string path = @"zodynas.txt";
+        const string path = @"./zodynas.txt";
         //string currentDirectory = Directory.GetCurrentDirectory();
         public static void ViewWords()
         {
