@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Runtime.ExceptionServices;
 
 namespace AnagramSolver.BusinessLogic
 {
@@ -11,13 +14,9 @@ namespace AnagramSolver.BusinessLogic
         public string Word { get; set; }
         public string PartOfSpeech { get; set; }
 
-        public static void Deserialize(string path, List<Anagram> list)
+        public override string ToString()
         {
-            using (Stream stream = File.Open(path, FileMode.Open))
-            {
-                var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                list = (List<Anagram>)binaryFormatter.Deserialize(stream);
-            }
+            return "\n" + $"{Word}, {PartOfSpeech}";
         }
 
 
@@ -26,35 +25,140 @@ namespace AnagramSolver.BusinessLogic
     public class AnagramRepository
     {
         const string path = @"./zodynas.txt";
-        //string currentDirectory = Directory.GetCurrentDirectory();
-        public static void ViewWords()
+
+        // Input zodzio sortinimas pagal abeceles tvarka
+
+        public static string SortByAlphabet(string inputWord)
+        {
+            char[] convertedToChar = inputWord.ToCharArray();
+            Array.Sort(convertedToChar);
+
+            return new string(convertedToChar);
+        }
+
+        // Zodziu rodymas 
+        public static List<Anagram> GetWords()
         {
 
-            // Hashset inicializacija
-            HashSet<string> myhash1 = new HashSet<string>();
+            // Dictionary inicializacija
 
-            // Failo skaitymas, paimamas pirmas stulpelis
+            var dictionary = new Dictionary<string, string>();
+
+
+            // Failo skaitymas
             using (StreamReader reader = new StreamReader(path))
             {
                 string line;
-                //string[] strArray;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    string lines = line.Split('\t').First();
-                    myhash1.Add(lines);
+                    string word = line.Split('\t').First();
+                    string PartOfSpeech = line.Split('\t').ElementAt(1);
+
+                    if (!dictionary.ContainsKey(word))
+                    {
+                        dictionary.Add(word, PartOfSpeech);
+                    }
+                }
+;            }
+
+
+            List<Anagram> myList = new List<Anagram>();
+
+            foreach(var keyValuePair in dictionary)
+            {
+                //Console.WriteLine(keyValuePair.Key);
+                //Console.WriteLine(keyValuePair.Value);
+                myList.Add(new Anagram { Word = keyValuePair.Key, PartOfSpeech = keyValuePair.Value });
+            }
+
+
+            var pattern = string.Join(",", myList.Select(cff => cff.ToString()));
+            Console.WriteLine(pattern);
+
+            return myList;
+
+        }
+
+
+        // Zodyno metodas
+
+        public static Dictionary<string, string> MakeDictionary()
+        {
+            var dictionary = new Dictionary<string, string>();
+
+            using (StreamReader reader = new StreamReader(path))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    string word = line.Split('\t').First();
+                    string value;
+
+                    string sortedWord = SortByAlphabet(word);
+                    //Console.WriteLine("SORTED" + sortedWord);
+
+                    if (dictionary.TryGetValue(sortedWord, out value))
+                    {
+                        dictionary[sortedWord] = word;
+                    }
+                    else
+                    {
+                        dictionary.Add(sortedWord, word);
+                    }
                 }
             }
 
-            // Konvertavimas is hashset i list
-            List<string> hList = myhash1.ToList();
-            var distinctList = hList.Distinct();
+            return dictionary;
+        }
 
-            // Print zodziu be pasikartojimu
-            foreach(string val in distinctList)
+        public static void ReturnAnagram(Dictionary<string, string> dictionary, string inputWord)
+        {
+            string value;
+            string sortedInputWord = SortByAlphabet(inputWord);
+
+            if (dictionary.TryGetValue(sortedInputWord, out value))
             {
-                Console.WriteLine(val);
+                Console.WriteLine("Anagram is found: " + "\n" + value);
+            }
+            else
+            {
+                Console.WriteLine("Word do not exist in dictionary, please try another one.");
+                //Console.ReadLine();
             }
 
+            //while(!dictionary.TryGetValue(sortedInputWord, out value))
+            //{
+                //Console.WriteLine("Word do not exist in dictionary, please try another one.");
+                //Console.ReadLine();
+            //}
+
+            //Console.WriteLine("Anagram is found: " + "\n" + value);
+
         }
+
+        public static void GetAnagrams(List<Anagram> list, string inputWord)
+        {
+            string sortedInputWord = SortByAlphabet(inputWord);
+            var dictionary = list.ToDictionary(x => x, x => x);
+
+
+
+        }
+
+
+    }
+
+    public class AnagramSolver
+    {
+        public static List<string> GetAnagrams(string myWords)
+        {
+            List<string> list = new List<string>();
+            return list;
+        }
+    }
+
+    public interface IAnagramSolver
+    {
+        IList<string> GetAnagrams(string myWords);
     }
 }
