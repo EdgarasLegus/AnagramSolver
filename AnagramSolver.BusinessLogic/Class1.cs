@@ -43,7 +43,7 @@ namespace AnagramSolver.BusinessLogic
             // Dictionary inicializacija
 
             var dictionary = new Dictionary<string, string>();
-
+            List<string> sortedWords = new List<string>();
 
             // Failo skaitymas
             using (StreamReader reader = new StreamReader(path))
@@ -99,7 +99,7 @@ namespace AnagramSolver.BusinessLogic
 
                     if (dictionary.TryGetValue(sortedWord, out value))
                     {
-                        dictionary[sortedWord] = word;
+                        dictionary[sortedWord] = value + "," + word;
                     }
                     else
                     {
